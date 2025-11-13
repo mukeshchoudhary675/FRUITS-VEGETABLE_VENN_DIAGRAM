@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib_venn import venn2_unweighted
 from io import BytesIO
+import xlsxwriter  # ✅ Ensure xlsxwriter is imported for Excel export
 
 # --- Streamlit Page Config ---
 st.set_page_config(page_title="F&V Venn Diagram", layout="wide")
@@ -27,8 +28,8 @@ if uploaded_file:
         st.stop()
 
     # --- Normalize text ---
-    df["Test Category"] = df["Test Category"].astype(str).str.strip().str.title()
-    df["Commodity"] = df["Commodity"].astype(str).str.strip()
+    df["Test Category"] = df["Test Category"].str.strip().str.title()
+    df["Commodity"] = df["Commodity"].str.strip()
 
     # --- Sidebar Controls ---
     st.sidebar.header("🎛 Customize View")
@@ -67,57 +68,47 @@ if uploaded_file:
         plt.tight_layout()
         return fig
 
-    # --- Compute Summary Table ---
-    st.subheader("📊 No. of Unsafe Samples Summary")
+    # --- Helper: Summary Table Function ---
+    def calculate_summary(df):
+        summary_data = []
+        commodities_list = ["Overall"] + sorted(df["Commodity"].dropna().unique())
 
-    summary_data = []
+        for com in commodities_list:
+            subset = df if com == "Overall" else df[df["Commodity"] == com]
+            pesticide_orders = set(subset.loc[subset["Test Category"] == "Pesticide Residue", "Order ID"])
+            metal_orders = set(subset.loc[subset["Test Category"] == "Metal Contaminants", "Order ID"])
+            both = pesticide_orders & metal_orders
 
-    # Function to calculate unsafe counts
-    def get_counts(data):
-        pesticide_orders = set(data.loc[data["Test Category"] == "Pesticide Residue", "Order ID"])
-        metal_orders = set(data.loc[data["Test Category"] == "Metal Contaminants", "Order ID"])
-        both = pesticide_orders & metal_orders
-        metal_only = metal_orders - pesticide_orders
-        pesticide_only = pesticide_orders - metal_orders
-        return len(metal_only), len(pesticide_only), len(both)
+            summary_data.append({
+                "Commodity": com,
+                "Metal Contaminants": len(metal_orders - both),
+                "Pesticide Residue": len(pesticide_orders - both),
+                "Both": len(both)
+            })
 
-    # Overall
-    metal_only, pesticide_only, both = get_counts(df)
-    summary_data.append(["Overall", metal_only, pesticide_only, both])
+        summary_df = pd.DataFrame(summary_data)
+        return summary_df
 
-    # Commodity-wise
-    for com in commodities:
-        subset = df[df["Commodity"] == com]
-        m_only, p_only, b = get_counts(subset)
-        summary_data.append([com, m_only, p_only, b])
+    # --- Generate summary ---
+    summary_df = calculate_summary(df)
 
-    summary_df = pd.DataFrame(summary_data, columns=["Commodity", "Metal Contaminants", "Pesticide Residue", "Both"])
-
-    # Show table
+    # --- Display table ---
+    st.subheader("📊 Non-Compliant Samples Summary")
     st.dataframe(summary_df, use_container_width=True)
 
-    # --- Download Table as Excel ---
+    # --- Excel Export ---
     excel_buffer = BytesIO()
     with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
-        summary_df.to_excel(writer, index=False, sheet_name="Unsafe Summary")
-    excel_buffer.seek(0)
+        summary_df.to_excel(writer, index=False, sheet_name="Non_Compliant_Summary")
+
     st.download_button(
-        label="📥 Download Summary (Excel)",
-        data=excel_buffer,
-        file_name="Unsafe_Samples_Summary.xlsx",
+        label="📥 Download Summary Table as Excel",
+        data=excel_buffer.getvalue(),
+        file_name="Non_Compliant_Summary.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    # --- Download Table as CSV ---
-    csv_data = summary_df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="📥 Download Summary (CSV)",
-        data=csv_data,
-        file_name="Unsafe_Samples_Summary.csv",
-        mime="text/csv"
-    )
-
-    # --- Main Display Logic ---
+    # --- Display Venn Diagram(s) ---
     if show_all:
         st.subheader("📊 Commodity-wise Venn Diagrams")
         all_coms = ["Overall"] + commodities
