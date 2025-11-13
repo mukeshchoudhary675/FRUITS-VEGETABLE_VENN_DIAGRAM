@@ -70,12 +70,12 @@ if uploaded_file:
         all_coms = ["Overall"] + commodities
         for com in all_coms:
             st.markdown(f"### 🥦 {com}")
-            subset = df if com == "Overall" else df[df["Commodity"] == com]
+            subset = df if com == "Non-Compliant Samples" else df[df["Commodity"] == com]
             fig = plot_venn(subset, com)
             st.pyplot(fig)
     else:
         st.subheader(f"📈 Venn Diagram: {selected_commodity}")
-        subset = df if selected_commodity == "Overall" else df[df["Commodity"] == selected_commodity]
+        subset = df if selected_commodity == "Non-Compliant Samples" else df[df["Commodity"] == selected_commodity]
         fig = plot_venn(subset, selected_commodity)
         st.pyplot(fig)
 
