@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib_venn import venn2_unweighted
 from io import BytesIO
+
 # --- Streamlit Page Config ---
 st.set_page_config(page_title="F&V Venn Diagram", layout="wide")
 st.title("🍎 Fruits & Vegetables — Test Category Venn Diagram")
@@ -67,15 +68,15 @@ if uploaded_file:
     # --- Main Display Logic ---
     if show_all:
         st.subheader("📊 Commodity-wise Venn Diagrams")
-        all_coms = ["Non-Compliant Samples"] + commodities
+        all_coms = ["Overall"] + commodities
         for com in all_coms:
             st.markdown(f"### 🥦 {com}")
-            subset = df if com == "Non-Compliant Samples" else df[df["Commodity"] == com]
+            subset = df if com == "Overall" else df[df["Commodity"] == com]
             fig = plot_venn(subset, com)
             st.pyplot(fig)
     else:
         st.subheader(f"📈 Venn Diagram: {selected_commodity}")
-        subset = df if selected_commodity == "Non-Compliant Samples" else df[df["Commodity"] == selected_commodity]
+        subset = df if selected_commodity == "Overall" else df[df["Commodity"] == selected_commodity]
         fig = plot_venn(subset, selected_commodity)
         st.pyplot(fig)
 
