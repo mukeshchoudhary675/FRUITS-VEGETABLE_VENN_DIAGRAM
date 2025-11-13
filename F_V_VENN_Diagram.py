@@ -67,7 +67,7 @@ if uploaded_file:
     # --- Main Display Logic ---
     if show_all:
         st.subheader("📊 Commodity-wise Venn Diagrams")
-        all_coms = ["Overall"] + commodities
+        all_coms = ["Non-Compliant Samples"] + commodities
         for com in all_coms:
             st.markdown(f"### 🥦 {com}")
             subset = df if com == "Non-Compliant Samples" else df[df["Commodity"] == com]
