@@ -106,7 +106,7 @@ if uploaded_file:
     )
 
 else:
-    st.info("👆 Please upload your monitoring dataset to begin.")
+    st.info("👆 Please upload your Key Parameter dataset to begin.")
 
 
 
