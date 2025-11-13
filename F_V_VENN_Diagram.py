@@ -8,7 +8,7 @@ st.set_page_config(page_title="Fruits & Vegetables Venn Diagram", layout="wide")
 
 st.title("🍎 Fruits & Vegetables — Unsafe Sample Summary & Venn Diagram")
 
-uploaded_file = st.file_uploader("📤 Upload your Monitoring CSV file", type=["csv", "xlsx"])
+uploaded_file = st.file_uploader("📤 Upload your Key Parameter CSV file", type=["csv", "xlsx"])
 
 if uploaded_file:
     # Read file
