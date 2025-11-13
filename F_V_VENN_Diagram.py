@@ -61,7 +61,9 @@ if uploaded_file:
                 if lbl:
                     lbl.set_fontsize(value_font)
 
-        plt.title(title, fontsize=label_font + 2)
+        # 🆕 Updated title text
+        display_title = "Non-Compliant Samples" if title == "Overall" else f"Non-Compliant Samples — {title}"
+        plt.title(display_title, fontsize=label_font + 2)
         plt.tight_layout()
         return fig
 
